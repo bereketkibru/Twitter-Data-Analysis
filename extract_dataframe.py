@@ -42,25 +42,25 @@ class TweetDfExtractor:
         return statuses_count
         
     def find_full_text(self)->list:
-        retweet_status = [a.get("retweeted_status", {}) for a in self.tweets_list]
-        full_text = [(a.get("extended_tweet", {})).get("full_text", None) for a in retweet_status]
-        filtered_text = [a for a in full_text if a != None]
-        full_text = ''.join(filtered_text)
-        return full_text
+        text = [x.get('retweeted_status', {}).get('extended_tweet',{}).get('full_text', '') \
+            for x in self.tweets_list]
+        return text
        
     
     def find_sentiments(self, text)->list:
+        text = [a.get('retweeted_status', {}) for a in self.tweets_list]
+        extended_tweet = [x.get('extended_tweet', {}) for a in text]
+        full_text = [a.get('full_text', '') for a in extended_tweet]
+
+        sentimentedText = [TextBlob(a) for a in full_text]
         polarity = []
         subjectivity = []
 
-        for each in text:
-            if (each):
-                result = TextBlob(str(each)).sentiment
-                polarity.append(result.polarity)
-                subjectivity.append(result.subjectivity)
+        for i in range(len(sentimentedText)):
+            polarity.append(sentimentedText[i].sentiment.polarity)
+            subjectivity.append(sentimentedText[i].sentiment.subjectivity)
         
         return polarity, subjectivity
-
 
     def find_created_time(self)->list:
         created_at = self.get_col_val('created_at')
